@@ -35,7 +35,7 @@ public class EliteEnemy extends AbstractEnemy {
     @Override
     public void forward() {
         // 精英敌机直线向下移动
-        this.locationY += this.speedY;
+        this.locationY += getSpeedY();
         // 飞出屏幕下方则消失
         if (this.locationY >= Main.WINDOW_HEIGHT) {
             vanish();

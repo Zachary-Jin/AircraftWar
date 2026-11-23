@@ -20,13 +20,7 @@ public class MobEnemy extends AbstractEnemy {
 
     @Override
     public void forward() {
-        // 普通敌机仅向屏幕下方移动
-        locationX += speedX;
-        locationY += speedY;
-        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
-            // 横向超出边界后反向
-            speedX = -speedX;
-        }
+        moveWithHorizontalBounce(1);
         // 判定 y 轴向下飞行出界
         if (locationY >= Main.WINDOW_HEIGHT) {
             vanish();

@@ -36,7 +36,7 @@ public abstract class AbstractProp extends AbstractFlyingObject {
     @Override
     public void forward() {
         // 道具向下移动
-        this.locationY += this.speedY;
+        this.locationY += getSpeedY();
         if (this.locationY >= Main.WINDOW_HEIGHT) {
             vanish();
         }

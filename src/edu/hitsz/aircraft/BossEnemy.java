@@ -45,10 +45,11 @@ public class BossEnemy extends AbstractEnemy {
     @Override
     public void forward() {
         // Boss敌机悬浮在屏幕上方，仅水平移动
-        this.locationX += this.speedX;
+        int horizontalSpeed = getSpeedX();
+        this.locationX += horizontalSpeed;
         
         // 边界检测和反弹
-        if (this.locationX <= 0 || this.locationX >= Main.WINDOW_WIDTH) {
+        if (horizontalSpeed != 0 && (this.locationX <= 0 || this.locationX >= Main.WINDOW_WIDTH)) {
             this.speedX = -this.speedX;
         }
 

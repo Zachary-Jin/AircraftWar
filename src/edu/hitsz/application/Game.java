@@ -312,15 +312,22 @@ public abstract class Game extends JPanel {
                         }
                         // 普通敌机不掉落道具
                     }
+                    break;
                 }
-                // 英雄机 与 敌机 相撞，均损毁
-                if (enemyAircraft.crash(heroAircraft) || heroAircraft.crash(enemyAircraft)) {
-                    if (enemyAircraft.notValid()) {
-                        continue; // 跳过已销毁的敌机
-                    }
-                    enemyAircraft.vanish();
-                    heroAircraft.decreaseHp(heroAircraft.getHp()); // 设置为当前生命值，确保归零但不溢出
-                }
+            }
+        }
+
+        if (heroAircraft.notValid()) {
+            return;
+        }
+
+        // 机身碰撞独立于子弹判定，已经击毁的敌机不再参与。
+        for (AbstractAircraft enemyAircraft : enemyAircrafts) {
+            if (!enemyAircraft.notValid()
+                    && (enemyAircraft.crash(heroAircraft) || heroAircraft.crash(enemyAircraft))) {
+                enemyAircraft.vanish();
+                heroAircraft.decreaseHp(heroAircraft.getHp());
+                return;
             }
         }
 

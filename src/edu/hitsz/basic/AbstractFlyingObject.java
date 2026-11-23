@@ -5,6 +5,7 @@ import edu.hitsz.application.ImageManager;
 import edu.hitsz.application.Main;
 
 import java.awt.image.BufferedImage;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 可飞行对象的基类
@@ -16,7 +17,7 @@ public abstract class AbstractFlyingObject {
     protected int locationX;
     protected int locationY;
 
-    // x,y轴移动速度
+    // x,y轴基础速度，临时道具效果通过倍率生效。
     protected int speedX;
     protected int speedY;
 
@@ -31,7 +32,7 @@ public abstract class AbstractFlyingObject {
 
     //有效（生存）标记，标记为 false的对象会在下次刷新时清除
     protected boolean isValid = true;
-    private int speedEffectVersion = 0;
+    private SpeedEffect speedEffect;
 
     public AbstractFlyingObject() {
     }
@@ -48,10 +49,15 @@ public abstract class AbstractFlyingObject {
      * 若飞行对象触碰到横向边界，横向速度反向
      */
     public void forward() {
-        locationX += speedX;
-        locationY += speedY;
-        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
-            // 横向超出边界后反向
+        moveWithHorizontalBounce(1);
+    }
+
+    protected void moveWithHorizontalBounce(int steps) {
+        double multiplier = activeSpeedMultiplier();
+        int horizontalSpeed = (int) Math.round(speedX * multiplier);
+        locationX += horizontalSpeed * steps;
+        locationY += (int) Math.round(speedY * multiplier) * steps;
+        if (horizontalSpeed != 0 && (locationX <= 0 || locationX >= Main.WINDOW_WIDTH)) {
             speedX = -speedX;
         }
     }
@@ -102,11 +108,11 @@ public abstract class AbstractFlyingObject {
     }
 
     public int getSpeedY() {
-        return speedY;
+        return (int) Math.round(speedY * activeSpeedMultiplier());
     }
 
     public int getSpeedX() {
-        return speedX;
+        return (int) Math.round(speedX * activeSpeedMultiplier());
     }
 
     public void setSpeed(int speedX, int speedY) {
@@ -120,9 +126,8 @@ public abstract class AbstractFlyingObject {
     }
 
     public void stopPermanently() {
-        speedEffectVersion++;
-        this.speedX = 0;
-        this.speedY = 0;
+        setSpeed(0, 0);
+        speedEffect = null;
     }
 
     public void stopTemporarily(long durationMillis) {
@@ -134,24 +139,16 @@ public abstract class AbstractFlyingObject {
     }
 
     private void applySpeedEffect(double multiplier, long durationMillis) {
-        int originalSpeedX = this.speedX;
-        int originalSpeedY = this.speedY;
-        int version = ++speedEffectVersion;
-        this.speedX = (int) Math.round(originalSpeedX * multiplier);
-        this.speedY = (int) Math.round(originalSpeedY * multiplier);
-        Thread restoreThread = new Thread(() -> {
-            try {
-                Thread.sleep(durationMillis);
-                if (speedEffectVersion == version && isValid) {
-                    this.speedX = originalSpeedX;
-                    this.speedY = originalSpeedY;
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }, "speed-effect-restore");
-        restoreThread.setDaemon(true);
-        restoreThread.start();
+        long durationNanos = TimeUnit.MILLISECONDS.toNanos(Math.max(0, durationMillis));
+        speedEffect = new SpeedEffect(multiplier, System.nanoTime() + durationNanos);
+    }
+
+    private double activeSpeedMultiplier() {
+        SpeedEffect effect = speedEffect;
+        if (effect != null && System.nanoTime() - effect.expiresAtNanos < 0) {
+            return effect.multiplier;
+        }
+        return 1.0;
     }
 
     public BufferedImage getImage() {
@@ -203,4 +200,13 @@ public abstract class AbstractFlyingObject {
         return !this.isValid;
     }
 
+    private static final class SpeedEffect {
+        private final double multiplier;
+        private final long expiresAtNanos;
+
+        private SpeedEffect(double multiplier, long expiresAtNanos) {
+            this.multiplier = multiplier;
+            this.expiresAtNanos = expiresAtNanos;
+        }
+    }
 }

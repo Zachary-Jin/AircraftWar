@@ -38,14 +38,7 @@ public class ElitePlusEnemy extends AbstractEnemy {
 
     @Override
     public void forward() {
-        // 精锐敌机可能带有横向移动
-        this.locationX += this.speedX;
-        this.locationY += this.speedY;
-
-        // 横向边界检测和反弹
-        if (this.locationX <= 0 || this.locationX >= Main.WINDOW_WIDTH) {
-            this.speedX = -this.speedX;
-        }
+        moveWithHorizontalBounce(1);
         // 飞出屏幕下方则消失
         if (this.locationY >= Main.WINDOW_HEIGHT) {
             vanish();

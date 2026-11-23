@@ -42,20 +42,7 @@ public class EliteProEnemy extends AbstractEnemy {
 
     @Override
     public void forward() {
-        // 王牌敌机具有复杂的移动模式
-        if (specialAbilityActive) {
-            // 特殊能力激活时移动更快
-            this.locationX += this.speedX * 2;
-            this.locationY += this.speedY * 2;
-        } else {
-            this.locationX += this.speedX;
-            this.locationY += this.speedY;
-        }
-        
-        // 边界检测和反弹
-        if (this.locationX <= 0 || this.locationX >= Main.WINDOW_WIDTH) {
-            this.speedX = -this.speedX;
-        }
+        moveWithHorizontalBounce(specialAbilityActive ? 2 : 1);
         
         // 飞出屏幕下方则消失
         if (this.locationY >= Main.WINDOW_HEIGHT) {

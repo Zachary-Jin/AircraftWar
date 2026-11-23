@@ -27,7 +27,7 @@ public abstract class BaseBullet extends AbstractFlyingObject implements PropObs
         }
 
         // 判定 y 轴出界
-        if (speedY > 0 && locationY >= Main.WINDOW_HEIGHT ) {
+        if (getSpeedY() > 0 && locationY >= Main.WINDOW_HEIGHT ) {
             // 向下飞行出界
             vanish();
         }else if (locationY <= 0){
